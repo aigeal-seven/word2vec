@@ -1,7 +1,7 @@
 from try_word2vec import VectorScorer
 from word2vec.parse_data import W2vData
 from config import model_path
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
 import nltk
 import multiprocessing
@@ -12,16 +12,38 @@ from gensim.models import Word2Vec
 import streamlit as st
 from os.path import isfile, join
 from os import listdir
-
+import PyPDF2
+import string
+import io
 
 stop_words = set(stopwords.words('english'))
 
+training_data = W2vData()
 
 st.title("Custom Word2Vec using Streamlit visualizations")
-st.markdown("Custom word2Vec targeted to generate appropriate word embeddings for tokens in resumes and job descriptions")
+st.markdown(
+    "Custom word2Vec targeted to generate appropriate word embeddings for tokens in any textual documents")
+
 
 st.header("Training custom word2Vec model")
 
+add_selectbox = st.sidebar.selectbox(
+    "Select following options", ("Train custom word2vec with your own data", "Train custom word2vec using resume data pre collected"))
+
+if add_selectbox == "Train custom word2vec with your own data":
+    uploaded_file = st.file_uploader("Chooose a file", type="txt")
+    if uploaded_file is not None:
+        data = uploaded_file.read()
+
+    # for pdf extensions
+    # data = PyPDF2.PdfFileReader(uploaded_file)
+    # number_of_pages = data.numPages
+    # file_content = ''
+    # for i in range(0, number_of_pages):
+    #     text = data.getPage(i).extractText()
+    #     file_content += text
+
+    # st.write(file_content)
 min_count = st.slider(
     label="min_count", min_value=1, max_value=6, step=1)
 st.markdown(
@@ -48,9 +70,20 @@ else:
 save_model_name = st.text_input("Save Model as : ")
 button = st.button("Train Model")
 if button:
+    if add_selectbox == "Train custom word2vec with your own data":
+        cleaned_data = training_data.clean_text(data)
 
-    training_data = W2vData()
-    sentences = training_data.prepare_training_text()
+        sent_tok_train = nltk.sent_tokenize(cleaned_data)
+        sentences = [nltk.word_tokenize(sentence.translate(str.maketrans(
+            '', '', string.punctuation))) for sentence in sent_tok_train]
+        cleaned_sentences = []
+        for sent in sentences:
+            cleaned_sentence = [
+                word for word in sent if word not in stop_words]
+            cleaned_sentences.append((cleaned_sentence))
+    else:
+        sentences = training_data.prepare_training_text()
+
     model = Word2Vec(sentences, min_count=min_count, window=window,
                      sample=6e-5, alpha=0.03, min_alpha=0.007, workers=workers, sg=approach_sg)
     model.train(sentences, total_examples=model.corpus_count,

@@ -18,7 +18,7 @@ class W2vData:
         initializer for initializing the
         data path and stopwords for further use
         '''
-        self.input_data = cfg.data_path  # for path, subdirs, files in os.walk(
+        # self.input_data = cfg.data_path  # for path, subdirs, files in os.walk(
         self.stopwords = set(stopwords.words('english'))
 
     def clean_text(self, text):
@@ -127,7 +127,7 @@ class W2vData:
 
         training_set = []
         files = []
-        for r, d, f in os.walk(self.input_data):
+        for r, d, f in os.walk(cfg.data_path):
             files = [os.path.join(r, file) for file in f]
 
         exts = set()
