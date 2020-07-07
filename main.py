@@ -12,7 +12,6 @@ from gensim.models import Word2Vec
 import streamlit as st
 from os.path import isfile, join
 from os import listdir
-import PyPDF2
 import string
 import io
 

@@ -6,4 +6,4 @@ ADD . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
 RUN python nltk_download.py
-CMD streamlit run main.py
+CMD streamlit run main.py .port 8051
